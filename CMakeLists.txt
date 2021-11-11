@@ -8,3 +8,4 @@ include_directories(${PROJECT_SOURCE_DIR}/include)
 
 add_executable(make-aknng make-aknng.cpp)
 add_executable(make-index make-index.cpp)
+add_executable(aknn-search aknn-search.cpp)
