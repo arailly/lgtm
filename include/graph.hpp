@@ -13,13 +13,8 @@ using namespace cpputil;
 
 namespace graph {
     struct SearchResult {
-        time_t time = 0;
-        time_t lsh_time = 0;
         vector<Neighbor> result;
-        unsigned long n_node_access = 0;
         unsigned long n_dist_calc = 0;
-        unsigned long n_hop = 0;
-        double dist_from_start = 0;
     };
 
     struct GraphIndex {
@@ -79,8 +74,6 @@ namespace graph {
             candidates.emplace(nearest_start_candidate);
             top_candidates.emplace(nearest_start_candidate);
 
-            result.dist_from_start = nearest_start_candidate.dist;
-
             while (!candidates.empty()) {
                 const auto nearest_candidate = candidates.top();
                 const auto& nearest_candidate_data =
@@ -89,8 +82,6 @@ namespace graph {
 
                 if (nearest_candidate.dist > top_candidates.top().dist)
                     break;
-
-                ++result.n_hop;
 
                 for (const auto& neighbor : edgeset[nearest_candidate.id]) {
                     if (visited[neighbor.id]) continue;

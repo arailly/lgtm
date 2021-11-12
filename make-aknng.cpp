@@ -12,11 +12,12 @@ using namespace nndescent;
 
 int main(int argc, char** argv) {
     int n, d, K;
-    string data_path, save_path;
+    string data_path;
+    string save_path = "aknng.ivecs";
 
     opterr = 0;
     int c;
-    while ((c = getopt(argc, argv, "n:d:K:o:")) != -1) {
+    while ((c = getopt(argc, argv, "n:d:K:")) != -1) {
         switch (c) {
             case 'n':
                 n = stoi(optarg);
@@ -26,9 +27,6 @@ int main(int argc, char** argv) {
                 break;
             case 'K':
                 K = stoi(optarg);
-                break;
-            case 'o':
-                save_path = optarg;
                 break;
             case '?':
                 if (optopt == 'n')

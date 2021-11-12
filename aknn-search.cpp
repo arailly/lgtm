@@ -19,7 +19,7 @@ int main(int argc, char** argv) {
 
     opterr = 0;
     int c;
-    while ((c = getopt(argc, argv, "k:N:n:d:m:w:t:D:c:s:o:")) != -1) {
+    while ((c = getopt(argc, argv, "k:N:n:d:m:w:t:D:c:s:")) != -1) {
         switch (c) {
             case 'k':
                 k = stoi(optarg);
@@ -50,9 +50,6 @@ int main(int argc, char** argv) {
                 break;
             case 's':
                 ns = stoi(optarg);
-                break;
-            case 'o':
-                save_path = optarg;
                 break;
             case '?':
                 if (optopt == 'n')
@@ -87,7 +84,7 @@ int main(int argc, char** argv) {
     lgtm::SearchResults results;
     for (int query_id = 0; query_id < n_query; ++query_id) {
         const auto query = queries.find(query_id);
-        auto result = index.knn_search_para(query, k, ns, candidate_size);
+        auto result = index.aknn_search(query, k, ns, candidate_size);
         results.push_back(move(result));
     }
 

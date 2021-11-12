@@ -11,16 +11,8 @@
 namespace lgtm {
     struct SearchResult {
         time_t time = 0;
-        time_t lsh_time = 0;
-        time_t graph_time = 0;
-        time_t merge_time = 0;
-        vector<cpputil::Neighbor> result;
-        unsigned long n_bucket_content = 0;
-        unsigned long n_node_access = 0;
+        cpputil::Neighbors result;
         unsigned long n_dist_calc = 0;
-        unsigned long n_hop = 0;
-        double dist_from_start = 0;
-        double recall = 0;
     };
 
     struct SearchResults {
@@ -32,9 +24,7 @@ namespace lgtm {
 
         void save(const string& log_path, const string& result_path) {
             ofstream log_ofs(log_path);
-            string line = "time,lsh_time,graph_time,merge_time,"
-                          "n_bucket_content,n_node_access,n_dist_calc,"
-                          "n_hop,dist_from_start,recall";
+            string line = "time,n_dist_calc";
             log_ofs << line << endl;
 
             ofstream result_ofs(result_path);
@@ -44,15 +34,7 @@ namespace lgtm {
             int query_id = 0;
             for (const auto& result : results) {
                 line = to_string(result.time) + "," +
-                        to_string(result.lsh_time) + "," +
-                        to_string(result.graph_time) + "," +
-                        to_string(result.merge_time) + "," +
-                        to_string(result.n_bucket_content) + "," +
-                        to_string(result.n_node_access) + "," +
-                        to_string(result.n_dist_calc) + "," +
-                        to_string(result.n_hop) + "," +
-                        to_string(result.dist_from_start) + "," +
-                        to_string(result.recall);
+                        to_string(result.n_dist_calc);
                 log_ofs << line << endl;
 
                 for (const auto& neighbor : result.result) {
@@ -111,8 +93,8 @@ namespace lgtm {
             return random_ids;
         }
 
-        auto knn_search(DataArray::Data query, int k,
-                        int n_start_node, int ef) {
+        auto aknn_search_single(DataArray::Data query, int k,
+                                int n_start_node, int ef) {
             auto result = SearchResult();
             const auto start_time = get_now();
 
@@ -120,30 +102,22 @@ namespace lgtm {
             auto start_ids = lsh.find(query, n_start_node);
             if (start_ids.empty()) start_ids.emplace_back(0);
 
-            result.n_bucket_content = start_ids.size();
-            const auto lsh_end_time = get_now();
-            result.lsh_time = get_duration(start_time, lsh_end_time);
-
             // graph
             const auto graph_start_time = get_now();
             auto graph_result = graph.knn_search(query, k, ef,
                                                  start_ids, n_start_node);
 
             result.result = graph_result.result;
-            result.n_node_access = graph_result.n_node_access;
             result.n_dist_calc = graph_result.n_dist_calc;
-            result.n_hop = graph_result.n_hop;
-            result.dist_from_start = graph_result.dist_from_start;
 
             const auto end_time = get_now();
-            result.graph_time = get_duration(graph_start_time, end_time);
             result.time = get_duration(start_time, end_time);
 
             return result;
         }
 
-        auto knn_search_para(DataArray::Data query, int k,
-                             int n_start_node, int ef) {
+        auto aknn_search(DataArray::Data query, int k,
+                         int n_start_node, int ef) {
             auto result = SearchResult();
             const auto start_time = get_now();
 
@@ -174,12 +148,7 @@ namespace lgtm {
                     result.result.emplace_back(neighbor);
                 }
 
-                result.lsh_time = max(result.lsh_time, graph_result.lsh_time);
-                result.graph_time = max(result.graph_time, graph_result.time);
-                result.n_node_access = max(result.n_node_access, graph_result.n_node_access);
                 result.n_dist_calc = max(result.n_dist_calc, graph_result.n_dist_calc);
-                result.n_hop = max(result.n_hop, graph_result.n_hop);
-                result.dist_from_start = max(result.dist_from_start, graph_result.dist_from_start);
             }
 
             sort_neighbors(result.result);
@@ -187,7 +156,6 @@ namespace lgtm {
 
             const auto end_time = get_now();
             result.time = get_duration(start_time, end_time);
-            result.merge_time = get_duration(merge_start_time, end_time);
 
             return result;
         }

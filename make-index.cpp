@@ -12,11 +12,12 @@ using namespace graph;
 
 int main(int argc, char** argv) {
     int n, d, degree;
-    string data_path, aknng_path, save_path;
+    string data_path, aknng_path;
+    string save_path = "lgtm-index.ivecs";
 
     opterr = 0;
     int c;
-    while ((c = getopt(argc, argv, "n:d:D:o:")) != -1) {
+    while ((c = getopt(argc, argv, "n:d:D:")) != -1) {
         switch (c) {
             case 'n':
                 n = stoi(optarg);
@@ -26,9 +27,6 @@ int main(int argc, char** argv) {
                 break;
             case 'D':
                 degree = stoi(optarg);
-                break;
-            case 'o':
-                save_path = optarg;
                 break;
             case '?':
                 if (optopt == 'n')
